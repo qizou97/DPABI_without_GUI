@@ -1,13 +1,14 @@
 # DPABI_without_GUI
 Process brain function images without GUI
 
-DPABI without GUI
+Version：
+DPABI: DPABI_V6.1_220101
 
 DPABI难以在没有图形界面的服务器上使用，本文通过[意疏](https://blog.csdn.net/sinat_35907936/article/details/113425845?spm=1001.2014.3001.5502)的方案实现了在无GUI的服务器上通过DPABI处理fMRI的功能。
 
 原文链接：https://blog.csdn.net/sinat_35907936/article/details/113425845
 
-### 1 服务器`DPARSFA_run`函数修改
+### 1 服务器`DPARSFA_run`函数修改 (可通过DPARSFA_run.m直接覆盖)
 
 ​		一般情况下不会选择`Crop T1`去除脖子，在GUI环境下，`DPARSFA_run`会在找不到co开头的`nifit`时会弹窗-`no co* T1 image is found`，选择`yes`可以用T1图像代替继续进行，**在无GUI环境时会报错**。
 
