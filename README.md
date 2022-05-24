@@ -8,7 +8,7 @@ DPABI难以在没有图形界面的服务器上使用，本文通过[意疏](htt
 
 原文链接：https://blog.csdn.net/sinat_35907936/article/details/113425845
 
-## 一、DPARSF Advanced Edition 对应 DPARSFA_rum.m
+## 一、DPARSF Advanced Edition 对应 DPARSFA_run.m
 
 ### 1 服务器`DPARSFA_run`函数修改 (可通过DPARSFA_run.m直接覆盖)
 
@@ -204,5 +204,4 @@ function dpabi_noGUI(Cfg_file,work_dir,StartingDirName,ROI_altas_name)
 
 end
 ```
-
 
