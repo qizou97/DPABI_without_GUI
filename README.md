@@ -8,6 +8,8 @@ DPABI难以在没有图形界面的服务器上使用，本文通过[意疏](htt
 
 原文链接：https://blog.csdn.net/sinat_35907936/article/details/113425845
 
+## 一、DPARSF Advanced Edition 对应 DPARSFA_rum.m
+
 ### 1 服务器`DPARSFA_run`函数修改 (可通过DPARSFA_run.m直接覆盖)
 
 ​		一般情况下不会选择`Crop T1`去除脖子，在GUI环境下，`DPARSFA_run`会在找不到co开头的`nifit`时会弹窗-`no co* T1 image is found`，选择`yes`可以用T1图像代替继续进行，**在无GUI环境时会报错**。
@@ -127,4 +129,80 @@ end
 ```bash
 ./matlab -nodisplay "$nojvm" -nosplash -r "dpabi_noGUI('/XXX/***.mat', '/XXX/XXX', 'FunRaw', 'XXX.nii')"
 ```
+## 二、DPARSF Basic Edition 对应 DPARSF_rum.m
+<img width="940" alt="image" src="https://user-images.githubusercontent.com/23079709/170091805-7e8a4cc1-5e50-47ab-86fa-0042f561d68f.png">
+<img width="629" alt="image" src="https://user-images.githubusercontent.com/23079709/170091950-cf5b1499-38bb-495b-81aa-6e09b5e675f7.png">
+`DPASF_run.m`最终会调用`DPARSFA_run.m`,需要在`DPADF_run.m`中指定关于`Reorienting`的可视化操作。 
+
+### 1、同DPARSFA_run.m同样的修改
+
+### 2、修改DPARSF_run.m
+
+在初始化阶段增加如下代码:
+
+
+```matlab
+Cfg.IsNeedReorientFunImgInteractively=CfgBasic.IsNeedReorientFunImgInteractively;
+Cfg.IsNeedReorientT1ImgInteractively=CfgBasic.IsNeedReorientT1ImgInteractively;
+Cfg.IsAllowGUI=CfgBasic.IsAllowGUI;
+```
+
+### 3、修改任务提交代码
+
+```matlab
+function dpabi_noGUI(Cfg_file,work_dir,StartingDirName,ROI_altas_name)
+
+% use dpabi pipeline without GUI
+% Cfg_file, work_dir , StartingDirName and ROI_atlas_name in dpabi as fuction inputs.
+% Cfg_file mat file from dipabi GUI selection saving.
+% if you dont do FC with ROI altas, make ROI_altas_name='', if not, make  ROI_altas_name= 'altas_name' such as 'aal.nii'
+% command: matlab -nodisplay "$nojvm" -nosplash -r "dpabi_noGUI('/home/pc/fMRI/data/tmp.mat','/home/pc/fMRI/data','FunImg', 'aal.nii')" 
+% kill progress command: ps -ef|grep 'matlab'|grep -v  'ii'|cut -c 9-16|xargs kill -9
+
+    dpabi_dir = '/XXX/DPABI';   %dpabi install dir，需要自行修改路径
+    template_dir = [dpabi_dir,'/Templates/'];
+    
+    sub_dir = dir([work_dir, '/',StartingDirName]);
+    log_file = [work_dir, '/log.txt'];
+
+    [D1, ~] = size(sub_dir);
+    SubjectID = cell(D1-2, 1);
+
+
+    for i = 3:D1
+        SubjectID{i-2} = sub_dir(i).name;
+    end
+    
+
+    load(Cfg_file)
+    Cfg.DataProcessDir  = work_dir;
+    Cfg.SubjectID = SubjectID;
+    Cfg.WorkingDir = work_dir;
+    Cfg.IsAllowGUI = 0;
+    Cfg.IsNeedReorientFunImgInteractively = 0;
+    Cfg.IsNeedReorientT1ImgInteractively = 0;
+    
+    if Cfg.IsCalFC == 1 || Cfg.IsExtractROISignals == 1
+        if size(ROI_altas_name) == 0
+            disp('there is no ROI_atlas_name')
+            return
+        else 
+            Cfg.CalFC.ROIDef = {[template_dir, ROI_altas_name]};
+        end
+    end
+    Cfg.StartingDirName = StartingDirName;
+    f1 = fopen(log_file,'w+');
+    diary(log_file)
+    diary on
+    
+    DPARSF_run(Cfg);
+
+    fclose(f1);
+
+    disp('Success!')
+    diary off
+
+end
+```
+
 
